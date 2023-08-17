@@ -1,3 +1,3 @@
 <p align="center">
-  <img src="https://github.com/AR-LABS-CPP/multi-code/assets/70814565/c651d83d-99eb-45a4-9076-9f7bf669835e">
+  <img src="https://github.com/AR-LABS-CPP/multi-code/assets/70814565/58a0ed4d-abeb-425b-abd2-5eb664ff2895">
 </p>
