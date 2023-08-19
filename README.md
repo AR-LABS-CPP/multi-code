@@ -22,7 +22,7 @@ Multi-Code is a proposed tool that should allow developers to work on a project 
 - [Socket.io](https://socket.io/) for sockets.
 - [React.js](https://react.dev/) for frontend.
 - [Express.js](https://expressjs.com/) for backend.
-- [MongoDB](https://www.mongodb.com/) and [PostgreSQL](https://www.postgresql.org/) for data storage.
+- [MongoDB](https://www.mongodb.com/) and [MinIO](https://min.io/) for data storage.
 
 ## Tasks Tracker
 - [x] Create prototype screens.
