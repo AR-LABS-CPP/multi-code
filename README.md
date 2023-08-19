@@ -23,3 +23,14 @@ Multi-Code is a proposed tool that should allow developers to work on a project 
 - [React.js](https://react.dev/) for frontend.
 - [Express.js](https://expressjs.com/) for backend.
 - [MongoDB](https://www.mongodb.com/) and [PostgreSQL](https://www.postgresql.org/) for data storage.
+
+## Tasks Tracker
+[x] Create prototype screens.
+[x] Create express server.
+[x] Integrate code editor in screens.
+[x] Implement rooms functionality using sockets.
+[] Implement code synchronization.
+[] Implement code translation.
+[] Implement file explorer sidebar.
+[] Implement file storage and retreival.
+[] Implement differential updates.
