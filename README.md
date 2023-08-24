@@ -29,7 +29,7 @@ Multi-Code is a proposed tool that should allow developers to work on a project 
 - [x] Create express server.
 - [x] Integrate code editor in screens.
 - [x] Implement rooms functionality using sockets.
-- [ ] Implement code synchronization.
+- [x] Implement code synchronization.
 - [ ] Implement code translation.
 - [ ] Implement file explorer sidebar.
 - [ ] Implement file storage and retreival.
