@@ -1,11 +1,13 @@
 const express = require("express")
 const http = require("http")
 const { Server } = require("socket.io")
+const diffMatchPatch = require("diff-match-patch")
 const SOCKET_EVENTS = require("./constants/SocketEvents")
 
 const PORT = process.env.PORT || 3050
 
 const app = express()
+const dmp = new diffMatchPatch()
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
@@ -18,6 +20,7 @@ const socketIO = new Server(server, {
 })
 
 const userMap = {}
+const projectData = {}
 
 const getAllConnectedClients = (projectId) => {
     return Array.from(socketIO.sockets.adapter.rooms.get(projectId) || [])
@@ -34,19 +37,30 @@ socketIO.on("connection", (socket) => {
         userMap[socket.id] = username
         socket.join(projectId)
 
+        if(!projectData[projectId]) {
+            projectData[projectId] = ""
+        }
+
         const clients = getAllConnectedClients(projectId)
 
         clients.forEach(({ socketId }) => {
             socketIO.to(socketId).emit("joined", {
                 clients,
                 username,
-                socketId: socket.id
+                socketId: socket.id,
+                code: projectData[projectId]
             })
         })
     })
 
-    socket.on(SOCKET_EVENTS.CODE_CHANGED, ({ projectId, newCode }) => {
-        socketIO.to(projectId).emit(SOCKET_EVENTS.CODE_CHANGED, { newCode })
+    socket.on(SOCKET_EVENTS.CODE_CHANGED, ({ projectId, patch, sender }) => {
+        const patches = dmp.patch_fromText(patch)
+        const newCode = dmp.patch_apply(patches, projectData[projectId])[0]
+        projectData[projectId] = newCode || ""
+
+        console.log(projectData[projectId])
+
+        socketIO.to(projectId).emit(SOCKET_EVENTS.CODE_CHANGED, { patch, sender })
     })
 
     socket.on("disconnecting", () => {

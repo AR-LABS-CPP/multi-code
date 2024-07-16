@@ -8,6 +8,7 @@ import Directory from "../components/Directory"
 import socket from "../utils/socket"
 import SOCKET_EVENTS from "../constants/SocketEvents"
 import { Navigate, useLocation, useNavigate, useParams } from "react-router-dom"
+import diff_match_patch from "diff-match-patch"
 
 const EditorPage = () => {
     const navigator = useNavigate()
@@ -15,9 +16,11 @@ const EditorPage = () => {
     const { projectId } = useParams()
     const [code, setCode] = useState("")
     const [clients, setClients] = useState([])
+    const dmp = useRef(new diff_match_patch())
+    const latestCode = useRef("")
 
     const dummyFilesAndFolders = {
-        "name": "folder_one",
+        "name": "Dummy",
         "type": "folder",
         "items": [
             {
@@ -64,9 +67,15 @@ const EditorPage = () => {
     }
 
     const onChange = useCallback((value, update) => {
+        const patch = dmp.current.patch_make(latestCode.current, value)
+        const patchText = dmp.current.patch_toText(patch)
+        
+        latestCode.current = value
+
         socket.emit(SOCKET_EVENTS.CODE_CHANGED, {
             projectId,
-            newCode: value
+            patch: patchText,
+            sender: socket.id
         })
     }, [])
 
@@ -79,6 +88,17 @@ const EditorPage = () => {
     const handleConnFailed = (err) => {
         console.debug("Socket error: ", err)
         toast.error("Connection failed, please try again")
+        navigator("/")
+    }
+
+    const leaveEditor = () => {
+        if(socket) {
+            socket.disconnect()
+            socket.off(SOCKET_EVENTS.JOINED)
+            socket.off(SOCKET_EVENTS.DISCONNECTED)
+            socket.off(SOCKET_EVENTS.CODE_CHANGED)
+        }
+
         navigator("/")
     }
 
@@ -97,11 +117,13 @@ const EditorPage = () => {
             username: location.state.username ?? "Default"
         })
 
-        socket.on(SOCKET_EVENTS.JOINED, ({ clients, username, socketId }) => {
+        socket.on(SOCKET_EVENTS.JOINED, ({ clients, username, socketId, code }) => {
             if(username !== location.state.username) {
                 toast.success(`${username} has joined the project`)
             }
-
+            
+            latestCode.current = code
+            setCode(code)
             setClients(clients)
         })
 
@@ -112,8 +134,17 @@ const EditorPage = () => {
             })
         })
 
-        socket.on(SOCKET_EVENTS.CODE_CHANGED, ({ newCode }) => {
-            if(newCode != null) {
+        socket.on(SOCKET_EVENTS.CODE_CHANGED, ({ patch, sender }) => {
+            // Do not update if the changes were sent by the same user
+            if(sender == socket.id) {
+                return
+            }
+
+            if(patch != null) {
+                const patches = dmp.current.patch_fromText(patch)
+                const newCode = dmp.current.patch_apply(patches, latestCode.current)[0]
+                
+                latestCode.current = newCode
                 setCode(newCode)
             }
         })
@@ -161,8 +192,8 @@ const EditorPage = () => {
                     }
                 </div>
                 <div className="flex flex-col space-y-3 w-full py-4">
-                    <button className="text-white bg-blue-800 hover:bg-blue-700 mx-4 py-2 rounded">Leave</button>
-                    <button className="text-white bg-blue-800 hover:bg-blue-700 mx-4 py-2 rounded">Copy Project Id</button>
+                    <button className="text-white bg-blue-800 hover:bg-blue-700 mx-4 py-2 rounded" onClick={() => leaveEditor()}>Leave</button>
+                    <p className="text-white text-center mx-4 py-2 rounded border-[1px]">Project ID: {projectId}</p>
                 </div>
             </div>
         </div>
