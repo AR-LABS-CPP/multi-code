@@ -33,4 +33,4 @@ Multi-Code is a proposed tool that should allow developers to work on a project 
 - [ ] Implement code translation.
 - [ ] Implement file explorer sidebar.
 - [ ] Implement file storage and retreival.
-- [ ] Implement differential updates.
+- [x] Implement differential updates.
